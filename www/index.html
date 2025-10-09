@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Tasklist AMS2</title>
+        <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+    </head>
+    <body>
+        <h1>TaskList</h1>
+        <ul>test task</ul>
+        <button onclick="afegeix">Afegeix</button>
+        <ul>
+            <li>text task</li>
+        </ul>
+        <script>
+            function afegeix() {
+                texxt=prompt ("Text introducir");
+                elem=$("<li>"+text+"</li>");
+                $("ul").append(elem);
+            }
+        </script>
+    </body>
+</html>
