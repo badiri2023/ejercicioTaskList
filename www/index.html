@@ -1,25 +1,111 @@
 <!DOCTYPE html>
+<html lang="ca">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tasklist AMS2</title>
+  <link rel="stylesheet" href="css/index.css" />
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+</head>
+<body>
+  <header>
+    <h1>Tasklist</h1>
+  </header>
+    <!-- container taskas -->
+  <div class="container">
+    <ul id="taskList">
+      <li>
+        <span class="taskText">test task</span>
+        <button class="deleteBtn" onclick="eliminar(event)">X</button>
+      </li>
+    </ul>
+  </div>
 
-<html>
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Tasklist AMS2</title>
-        <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
-    </head>
-    <body>
-        <h1>TaskList</h1>
-        <ul>test task</ul>
-        <button onclick="afegeix">Afegeix</button>
-        <ul>
-            <li>text task</li>
-        </ul>
-        <script>
-            function afegeix() {
-                texxt=prompt ("Text introducir");
-                elem=$("<li>"+text+"</li>");
-                $("ul").append(elem);
+  <!-- nueva taska  -->
+  <div id="taskFormContainer">
+    <input type="text" id="taskInput" placeholder="Escriu la teva tasca..." />
+    <button id="addTask">Afegir</button>
+  </div>
+
+  <footer>
+    <button id="btnNew">Nova tasca +</button>
+    <button id="btnEdit">Editar Taska</button>
+  </footer>
+
+  <script>
+    let edicion = false;
+    $('#btnNew').on('click', function () {
+      $('#taskFormContainer').slideToggle();
+    });
+   
+      $('#btnEdit').on('click', function () {
+        edicion = !edicion;
+      $('#taskList li').each(function () {
+        if(edicion){
+          const acceptBtn = $('<button class="acceptBtn">Editar</button>');        // Añadimos el evento directamente al botón ✔
+          acceptBtn.on('click', function () {
+            const li = $(this).closest('li');
+            const span = li.find('.taskText');
+            
+            // Si ya hay un input, lo convertimos en texto 
+            if (li.find('input').length) {
+              const nuevoTexto = li.find('input').val();
+              const nuevoSpan = $('<span class="taskText"></span>').text(nuevoTexto);
+              li.find('input').replaceWith(nuevoSpan);
+              $(this).text('Editar'); 
+            } else {
+              const textoActual = span.text();
+              const input = $('<input type="text" class="editInput" />').val(textoActual);
+              span.replaceWith(input);
+              input.focus().select();
             }
-        </script>
-    </body>
+
+
+          });
+          $(this).find('.deleteBtn').replaceWith(acceptBtn);
+        }else{
+          // cambiamos de neuvo los botones de editar por borrar
+          const deleteBtn = $('<button class="deleteBtn">X</button>');
+          deleteBtn.on('click', eliminar);
+          $(this).find('.acceptBtn').replaceWith(deleteBtn);
+      }});
+    });
+    $('#addTask').on('click', function () {
+      const text = $('#taskInput').val().trim();
+      if (text) {
+        const elem = $('<li>' +
+          '<span class="taskText">' + text + '</span>' +
+          '<button class="deleteBtn" onclick="eliminar(event)">X</button>' +
+        '</li>');
+    elem.find('.deleteBtn').on('click', eliminar);
+
+    // Función para  editar 
+    elem.find('.acceptBtn').on('click', function () {
+      const li = $(this).closest('li');
+      const span = li.find('.taskText');
+
+      if (li.find('input').length) {
+        const nuevoTexto = li.find('input').val();
+        const nuevoSpan = $('<span class="taskText"></span>').text(nuevoTexto);
+        li.find('input').replaceWith(nuevoSpan);
+        $(this).text('Editar');
+      } else {
+        const textoActual = span.text();
+        const input = $('<input type="text" class="editInput" />').val(textoActual);
+        span.replaceWith(input);
+        input.focus().select();
+        $(this).text('✔');
+      }
+    });
+        $('#taskList').append(elem);
+        $('#taskInput').val('');
+        $('#taskFormContainer').slideUp();
+      }
+    });
+    //funcion para eliminar
+    function eliminar(event) {
+      $(event.target).closest('li').remove();
+    }
+  </script>
+</body>
 </html>
