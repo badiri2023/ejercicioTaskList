@@ -102,6 +102,32 @@
         $('#taskFormContainer').slideUp();
       }
     });
+    // funcion para guardar las tareas
+    function guardarTareas() {
+      const tareas = [];
+      $('#taskList li').each(function () {
+        const texto = $(this).find('.taskText').text();
+        tareas.push({ texto });
+      });
+      localStorage.setItem("tareas", JSON.stringify(tareas));
+    }
+
+    // recuperar tarea
+    function recuperarTareas() {
+      const tareasGuardadas = JSON.parse(localStorage.getItem("tareas")) || [];
+      tareasGuardadas.forEach(tarea => {
+        const elem = $('<li>' +
+          '<span class="taskText">' + tarea.texto + '</span>' +
+          '<button class="deleteBtn">X</button>' +
+          '<button class="acceptBtn">Editar</button>' +
+        '</li>');
+
+        elem.find('.deleteBtn').on('click', eliminar);
+        elem.find('.acceptBtn').on('click', editarTarea);
+
+        $('#taskList').append(elem);
+      });
+    }
     //funcion para eliminar
     function eliminar(event) {
       $(event.target).closest('li').remove();
