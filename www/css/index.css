@@ -21,7 +21,12 @@ header h1 {
   text-align: center;
   width: 100%;
 }
-
+.editLabel {
+  text-align: center;
+  font-weight: bold;
+  color: crimson;
+  margin-top: 5px;
+}
 /* Contenedor principal de tareas*/
 .container {
   max-width: 500px;
