@@ -4,13 +4,16 @@
   <meta charset="utf-8" /> 
   <meta name="viewport" content="width=device-width, initial-scale=1" /> 
   <title>Tasklist AMS2</title>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: https://ssl.gstatic.com 'unsafe-eval';
+  style-src 'self' 'unsafe-inline'; media-src *; img-src 'self' data: content:;">
   <link rel="stylesheet" href="css/index.css" />
-  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script> 
+  <script src="js/jquery-3.7.1.min.js"></script>
 </head>
 <body>
   <header>
     <h1>Tasklist</h1>
     <div id="editModeLabel" class="editLabel"></div>
+ 
   </header>
 
   <!-- Contenedor de tareas -->
