@@ -1,29 +1,162 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
-
-// Wait for the deviceready event before using any of Cordova's device APIs.
-// See https://cordova.apache.org/docs/en/latest/cordova/events/events.html#deviceready
+// Esperamos a que el dispositivo Cordova esté listo
 document.addEventListener('deviceready', onDeviceReady, false);
 
 function onDeviceReady() {
-    // Cordova is now initialized. Have fun!
-
-    console.log('Running cordova-' + cordova.platformId + '@' + cordova.version);
-    document.getElementById('deviceready').classList.add('ready');
+    iniciarApp();
 }
+
+function iniciarApp() {
+    // booleano para el modod edicion
+    let edicion = false; 
+
+    // Mostrar/ocultar el formulario de nueva tarea
+    $('#btnNew').on('click', function () {
+      if (edicion) return; 
+      $('#taskFormContainer').slideToggle();
+    });
+
+    // Activar o desactivar modo edición
+    $('#btnEdit').on('click', function () {
+      edicion = !edicion;
+      $('#editModeLabel').text(edicion ? 'Editing mode ' : '');
+
+      // oculta el formulario si estaba abierto
+       if (edicion) {
+          $('#taskFormContainer').slideUp(); 
+        }
+      
+      // Recorre cada tarea para cambiar los botones
+      $('#taskList li').each(function () {
+        if (edicion) {
+          // Si estamos en modo edición, reemplazamos el botón de eliminar por uno de editar
+          const acceptBtn = $('<button class="acceptBtn">Editar</button>');
+          acceptBtn.on('click', function () {
+            const li = $(this).closest('li');
+            const span = li.find('.taskText');
+
+            // Si ya hay un input, lo convertimos en texto
+            if (li.find('input').length) {
+              const nuevoTexto = li.find('input').val();
+              const nuevoSpan = $('<span class="taskText"></span>').text(nuevoTexto);
+              li.find('input').replaceWith(nuevoSpan);
+              $(this).text('Editar');
+              guardarTareas(); 
+            } else {
+              // Si hay texto, lo convertimos en input editable
+              const textoActual = span.text();
+              const input = $('<input type="text" class="editInput" />').val(textoActual);
+              span.replaceWith(input);
+              input.focus().select();
+              $(this).text('Aceptar');
+            }
+          });
+
+          // intercambiamos el boton de eliminar por el de editar
+          $(this).find('.deleteBtn').replaceWith(acceptBtn);
+        } else {
+            // Convertir el input en texto 
+            const input = $(this).find('input.editInput');
+            if (input.length) {
+              const nuevoTexto = input.val();
+              const nuevoSpan = $('<span class="taskText"></span>').text(nuevoTexto);
+              input.replaceWith(nuevoSpan);
+            }
+
+            // Reemplazar boton de editar por boton de borrar
+            const deleteBtn = $('<button class="deleteBtn">X</button>');
+            deleteBtn.on('click', eliminar);
+            $(this).find('.acceptBtn').replaceWith(deleteBtn);
+          }
+      });
+    });
+
+    // Añadir nueva tarea
+    $('#addTask').on('click', function () {
+      if (edicion) return;
+      // Obtenemos el texto del input
+      const text = $('#taskInput').val().trim(); 
+      if (text) {
+        // CORRECCIÓN: Quitamos el onclick="eliminar(event)" de aquí por seguridad de Cordova
+        const elem = $('<li>' +
+          '<span class="taskText">' + text + '</span>' +
+          '<button class="deleteBtn">X</button>' +
+        '</li>');
+
+        // Añadimos evento de eliminar a través de jQuery (Esto sí lo permite Cordova)
+        elem.find('.deleteBtn').on('click', eliminar);
+
+        // Añadimos evento de editar si se activa el modo edición
+        elem.find('.acceptBtn').on('click', function () {
+          const li = $(this).closest('li');
+          const span = li.find('.taskText');
+
+          if (li.find('input').length) {
+            const nuevoTexto = li.find('input').val();
+            const nuevoSpan = $('<span class="taskText"></span>').text(nuevoTexto);
+            li.find('input').replaceWith(nuevoSpan);
+            $(this).text('Editar');
+            guardarTareas();
+          } else {
+            const textoActual = span.text();
+            const input = $('<input type="text" class="editInput" />').val(textoActual);
+            span.replaceWith(input);
+            input.focus().select();
+            $(this).text('✔');
+          }
+        });
+
+        // Añadimos la tarea a la lista
+        $('#taskList').append(elem);
+        // Limpiamos el campo
+        $('#taskInput').val(''); 
+        // Ocultamos el formulario
+        $('#taskFormContainer').slideUp(); 
+        // Guardamos la tarea
+        guardarTareas(); 
+      }
+    });
+
+    // Guardar todas las tasks en localStorage mediante el json.stringify
+    function guardarTareas() {
+      const tareas = [];
+      $('#taskList li').each(function () {
+        const texto = $(this).find('.taskText').text();
+        // Guardamos solo el texto
+        tareas.push({ texto });
+      });
+      localStorage.setItem("tareas", JSON.stringify(tareas)); 
+    }
+
+    // Recuperar tareas guardadas al cargar la página
+    function recuperarTareas() {
+      const tareasGuardadas = JSON.parse(localStorage.getItem("tareas")) || [];
+      tareasGuardadas.forEach(tarea => {
+        // Creamos la tarea guardada de nuevo
+        const elem = $('<li>' +
+          '<span class="taskText">' + tarea.texto + '</span>' +
+          '<button class="deleteBtn">X</button>' + '</li>');
+
+        // Añadimos eventos a los botones
+        elem.find('.deleteBtn').on('click', eliminar);
+
+        // Añadimos la tarea a la lista
+        $('#taskList').append(elem);
+      });
+    }
+
+    // Eliminar tarea y guardando el estado de la lsita de tareas
+    function eliminar(event) {
+      $(event.target).closest('li').remove(); 
+      guardarTareas(); 
+    }
+
+    // recupera los datos guardados al iniciar
+    recuperarTareas();
+}
+
+// Esto lanza la app si pruebas desde un navegador de PC en vez de Cordova
+$(document).ready(function () {
+    if (!window.cordova) {
+        iniciarApp();
+    }
+});
